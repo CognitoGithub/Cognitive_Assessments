@@ -1,11 +1,15 @@
 % path  and fikename to a data file
 clear all;
 task = 'SART';
-subjects = {'test'};
-path = '\\192.168.1.21\Cognito_Therapeutics\uploads\raw_data\Cognitive Tests\PsyToolKit Files\2019-10-20\';
+subjects = {'0784'};
+path = '\\192.168.1.21\Cognito_Therapeutics\uploads\raw_data\Cognitive Tests\PsyToolKit Files\2019-11-06\';
 for subj_idx = 1:length(subjects)
     filename = [path subjects{subj_idx} '\'];
     files = dir(filename);
+    if isempty(files)
+        fprintf('No Files or Subject Folder exists...\n')
+        return
+    end
     clear vect
     for idx = 1:length(files)
         if strfind(files(idx).name, task)
@@ -166,8 +170,9 @@ for subj_idx = 1:length(subjects)
                 LatIncc_med(idx) = nan;
                 LatIncc_std(idx) = nan;
             end
-            out = [Corr; Lat; Lat_med; Lat_std; LatCong; LatCong_med; LatCong_std; LatInCong; LatInCong_med; LatInCong_std; LatCorr; LatCorr_med; LatCorr_std; LatIncc; LatIncc_med; LatIncc_std]';
+            
         end
+        out = [Corr; Lat; Lat_med; Lat_std; LatCong; LatCong_med; LatCong_std; LatInCong; LatInCong_med; LatInCong_std; LatCorr; LatCorr_med; LatCorr_std; LatIncc; LatIncc_med; LatIncc_std]';
         clear idx
         save([subjects{subj_idx} '_CuedStroop_Results.txt'], '-ASCII', '-TABS', 'out');
     end
@@ -244,14 +249,14 @@ for subj_idx = 1:length(subjects)
                 LatIncc_med(idx) = nan;
                 LatIncc_std(idx) = nan;
             end
-            out = [Corr; Lat; Lat_med; Lat_std; LatCong; LatCong_med; LatCong_std; LatInCong; LatInCong_med; LatInCong_std; LatCorr; LatCorr_med; LatCorr_std; LatIncc; LatIncc_med; LatIncc_std]';
         end
+        out = [Corr; Lat; Lat_med; Lat_std; LatCong; LatCong_med; LatCong_std; LatInCong; LatInCong_med; LatInCong_std; LatCorr; LatCorr_med; LatCorr_std; LatIncc; LatIncc_med; LatIncc_std]';
         clear idx
         save([subjects{subj_idx} '_Flanker_Results.txt'], '-ASCII', '-TABS', 'out');
     end
     %% Go-NOGO
     if strcmp(task, 'GNG')
-        clear resp Lat* Corr temp*
+        clear resp Lat* Corr temp* Go* No* FalseP
         TaskFiles = find(vect);
         for idx = 1:length(TaskFiles)
             file = files(TaskFiles(idx)).name;
@@ -271,23 +276,29 @@ for subj_idx = 1:length(subjects)
                     end
                 end
             end
+            clear trial_idx
             GoLat(idx) = mean(tempgoLat(idx,:),2);
             GoLat_med(idx) = median(tempgoLat(idx,:),2);
             GoLat_std(idx) = std(tempgoLat(idx,:),[],2);
+
             
             NoGoLat(idx) = mean(tempnogoLat(idx,:),2);
             NoGoLat_med(idx) = median(tempnogoLat(idx,:),2);
             NoGoLat_std(idx) = std(tempnogoLat(idx,:),[],2);
-            
-            out = [GoLat; GoLat_med; GoLat_std; NoGoLat; NoGoLat_med; NoGoLat_std; FP]';
+            FalseP(idx) = FP;
         end
         clear idx
+        out = [GoLat; GoLat_med; GoLat_std; NoGoLat; NoGoLat_med; NoGoLat_std; FalseP]';
         save([subjects{subj_idx} '_GNG_Results.txt'], '-ASCII', '-TABS', 'out');
     end
     %% SART
     if strcmp(task, 'SART')
-        clear resp Lat* Corr temp*
+        clear resp Lat* Corr temp* Go* No* FalseP
         TaskFiles = find(vect);
+        if isempty(TaskFiles)
+            fprintf('No Task Files Present in Subject Folder\n')
+            return
+        end
         for idx = 1:length(TaskFiles)
             file = files(TaskFiles(idx)).name;
             x = importdata([path subjects{subj_idx} '\' file], ' ');
@@ -306,6 +317,7 @@ for subj_idx = 1:length(subjects)
                     end
                 end
             end
+            clear trial_idx
             GoLat(idx) = mean(tempgoLat(idx,:),2);
             GoLat_med(idx) = median(tempgoLat(idx,:),2);
             GoLat_std(idx) = std(tempgoLat(idx,:),[],2);
@@ -313,10 +325,10 @@ for subj_idx = 1:length(subjects)
             NoGoLat(idx) = mean(tempnogoLat(idx,:),2);
             NoGoLat_med(idx) = median(tempnogoLat(idx,:),2);
             NoGoLat_std(idx) = std(tempnogoLat(idx,:),[],2);
-            
-            out = [GoLat; GoLat_med; GoLat_std; NoGoLat; NoGoLat_med; NoGoLat_std; FP]';
+            FalseP(idx) = FP;
         end
         clear idx
+        out = [GoLat; GoLat_med; GoLat_std; NoGoLat; NoGoLat_med; NoGoLat_std; FalseP]';
         save([subjects{subj_idx} '_SART_Results.txt'], '-ASCII', '-TABS', 'out');
     end
     %% for Zero Back
